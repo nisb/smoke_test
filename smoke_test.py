@@ -1,16 +1,16 @@
 #!/usr/bin/ python
 # -*- coding: utf-8 -*-
 #########################################################################################
-# Version 0.6
+# Version 0.7
 #
-# Opens a document in the app that you test, takes a screenshot of the document and compares with a 
+# Opens a document in the app that you test, takes a screenshot of the document and compares it with a
 # standard one. Test is passed if the screenshots are equal. With a command line key, the 
 # script can update the standard screenshots (in case the software or test documents was changed).
 #
 # The application under test is responsible for opening documents in a window of proper size and 
 # at a proper scale. Make sure that the application's window appears in the middle of the screen
 # what is needed to take a screenshot.
-# Prefere using horizontal documents since they fit the screen the best.
+# Prefer using horizontal documents since they fit the screen the best.
 #
 # Author:  Mykola Shubin
 # Licence: MIT
@@ -48,11 +48,13 @@
 #   parameter from setup.txt in another module, and then pass it here to the superclass. 
 #   This eliminates the need to define DELAY in each module.
 # - Added a static variable in a class to hold the global delay.
+# Version 0.7
+# - Refactoring of main()
 # 
 # To Do:
 # - ? Multiple screenshots per document support: 
 #   make preparations, take a screenshot; make preparations, take a screenshot; ...
-# - ? Multipage document support. This is a special case of many screenshots per document.
+# - ? Multi-page document support. This is a special case of many screenshots per document.
 #   
 # 
 #########################################################################################
@@ -198,7 +200,8 @@ class Document():
 		""" Create a unique name for a log folder in each test session. """
 		curr = datetime.datetime.now().timetuple()
 		name = "Failed_Tests"
-		for item in range(0, 5): name += "_" + str(curr[item])
+		for item in range(0, 5):
+			name += "_" + str(curr[item])
 		return name
 	# end def get_curr_date_time
 
@@ -229,8 +232,10 @@ class Document():
 		""" Compare how the test document was shown on the screen with the standard one. """
 		self.scrn.take()
 		result = self.scrn.compare()
-		if result: self.delete_screenshot()
-		else: self.save_screenshot()
+		if result:
+			self.delete_screenshot()
+		else:
+			self.save_screenshot()
 		return result
 	# end def check
 
@@ -257,7 +262,6 @@ class Document():
 		all_screenshots = []
 		for file in os.listdir(self.document_folder):
 			if file.startswith(self.document_name) and file.endswith(Screenshot.get_extension()):
-
 				all_screenshots.append(self.document_folder + os.sep + file)
 		if len(all_screenshots) == 0:
 			return None
@@ -308,12 +312,12 @@ class Settings():
 
 	def read_settings(self):
 		""" Read settings from a file. """
-									# examples
 									# no space or tab symbol(s) is allowed before or after '='
 									# no space or tab symbol(s) is allowed in the parameter name
 									# no comments are allowed in the same line with data
 									# more than one '=' per line isn't allowed
 									#		# comment
+									# examples:
 		VALUE = "\w+=(.|/|\\|'|\")*\w+"
 									#		path=/Applications/program.app
 									#		repeat=3
@@ -329,7 +333,7 @@ class Settings():
 
 		try:
 			with open(self.path + self.SETUP_FILE, 'r') as input_file:
-				list_in_progress = False # when true, the next line can be a list item
+				list_in_progress = False  # when true, the next line can be a list item
 				for line in input_file:
 					# skip non-data lines
 					match = re.findall(regex_wrong_format, line)
@@ -341,10 +345,10 @@ class Settings():
 					  len(line) <= 2 or \
 					  line[0:1] == "#" or \
 					  line[0:1] == "=":
-						list_in_progress = False # no list items are expected in the following line
-						continue # skip empty lines
+						list_in_progress = False  # no list items are expected in the following line
+						continue  # skip empty lines
 
-					if line[-1] == "\n": line = line[0:-1] # remove trailing "new line" symbol
+					if line[-1] == "\n": line = line[0:-1]  # remove trailing "new line" symbol
 					# check what kind of data is in the current line
 					if not list_in_progress:
 						# value or start of a list
@@ -399,7 +403,7 @@ class GlobalDelay():
 
 	@staticmethod
 	def set(input_delay):
-		# check if the delay value is in the range (ms)
+		# check if the delay value is in the reasonable range (ms)
 		if (0.01 < input_delay < 20):
 			GlobalDelay.delay = input_delay
 		else:
@@ -412,7 +416,6 @@ class GlobalDelay():
 # end class GlobalDelay
 
 
-# open the app and get it ready
 def open_the_app(app_path, the_app):
 	""" Open the app under test. """
 	command = 'open \'' + app_path + '\''
@@ -429,35 +432,33 @@ def open_the_app(app_path, the_app):
 # end def open_the_app
 
 
-#========================================================================================
-# __main__
-#========================================================================================
-
-if __name__ == '__main__':
-
-	if len(sys.argv) < 2: # Check number of command line arguments
-		sys.stderr.write("Please supply the path to a test document folder" + "\n" + "Usage : python %s [Sikuli arguments] -p /path/documents/" % sys.argv[0])
+def main():
+	if len(sys.argv) < 2:  # Check number of command line arguments
+		sys.stderr.write(
+			"Please supply the path to a test document folder" + "\n" +
+			"Usage : python %s [Sikuli arguments] -p /path/documents/" %
+			sys.argv[0])
 		raise SystemExit(1)
 
 	try:
 		options, arguments = getopt.getopt(sys.argv[1:], "p:u", ["test_folder_path=", "update"])
 	except getopt.GetoptError as err:
-			# print help information and exit:
-			print str(err) # will print something like "option -a not recognized"
-			sys.exit(2)
+		# print help information and exit:
+		print str(err)  # will print something like "option -a not recognized"
+		sys.exit(2)
 
 	test_folder = ""
-	test_doc_folder = ""
-	update_screenshots_mode = False
+	update_screenshots_mode = False  # False - run test, True - update screenshots
 
 	for (opt, arg) in options:
 		if opt in ("-p", "--test_folder_path"):
-			# path to a folder with documents, settings and application under test
+			# path to a folder with documents and settings
 			test_folder = arg
 		elif opt in ("-u", "--update"):
-			# update standard screenshots instead of running test
+			# update standard screenshots instead of running the test
 			update_screenshots_mode = True
-		else: pass
+		else:
+			pass
 
 	if not os.path.exists(test_folder):
 		print "Invalid input path to the test folder or the -p key is missing."
@@ -469,7 +470,7 @@ if __name__ == '__main__':
 	Screenshot.set_extension(set.get_parameter("screenshot_ext"))
 	GlobalDelay.set(set.get_float_parameter("delay"))
 	app_path = set.get_parameter("app_path_to_test")
-	app_path_standard = set.get_parameter("app_path_standard") # to create standard screenshots
+	app_path_standard = set.get_parameter("app_path_standard")  # to create standard screenshots
 
 	test_doc_folder = test_folder + "documents"
 	if not os.path.exists(test_doc_folder):
@@ -491,46 +492,49 @@ if __name__ == '__main__':
 
 	number_of_docs = len(document_list)
 
+	if update_screenshots_mode == True:
+		app_path = app_path_standard  # take screenshots of the standard application
+
+	the_app = App(app_path)
+	open_the_app(app_path, the_app)
+
 	test = 0
-	if update_screenshots_mode == False:
-		# testing mode
+	failed = 0
+	while (test < number_of_docs):
+		try:
+			doc = Document(document_list[test], app_path, update_screenshots_mode)
+		except OSError as msg:
+			print msg
+			test += 1
+			continue
+		doc.open()
 
-		the_app = App(app_path)
-		open_the_app(app_path, the_app)
-
-		failed = 0
-		while (test < number_of_docs):
-			try:
-				doc = Document(document_list[test], app_path, update_screenshots_mode)
-			except OSError as msg:
-				print msg
-				test += 1
-				continue
-			doc.open()
+		if update_screenshots_mode == False:
+			# testing
 			if not doc.check():
 				print "Failed", doc.get_document_name()
 				failed += 1
-			doc.close()
-			test += 1
+		else:
+			# updating screenshots mode
+			doc.update_standard_screenshot()
+
+		doc.close()
+		test += 1
+
+	if update_screenshots_mode == False:
 		print("Tests total: {0}  Failed: {1}".format(number_of_docs, failed))
 	else:
 		# updating screenshots mode
-
-		the_app = App(app_path_standard)
-		open_the_app(app_path_standard, the_app)
-
-		while (test < number_of_docs):
-			try:
-				doc = Document(document_list[test], app_path_standard, update_screenshots_mode)
-			except OSError as msg:
-				print msg
-				test += 1
-				continue
-			doc.open()
-			doc.update_standard_screenshot()
-			doc.close()
-			test += 1
 		print("\nScreenshots total: {0}".format(number_of_docs))
 
 	the_app.close()
+
+# end def main
+
+# ========================================================================================
+# __main__
+# ========================================================================================
+
+if __name__ == '__main__':
+	main()
 

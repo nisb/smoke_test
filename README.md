@@ -5,6 +5,8 @@ Originally, the script was intended to check if a document containing text and g
 
 In the same way, one can verify the program interface itself (e.g. detect missing or incorrectly initialized controls).
 
+Screenshots are taken by the means of OS X (macOS).
+
 Dependencies: [Sikuli](http://www.sikuli.org/).
 
 ## How to Create a Sikuli Project?
