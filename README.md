@@ -84,3 +84,17 @@ This file contains these details:
 - Document file name extension.
 - Screenshot file name extension.
 - Delay parameter which lets you adjust timeouts in the script.
+
+## Sample Test
+The sample_test folder lets you see how the script works. This test opens TIFF images in Preview.app and compares its screenshots with pre-created ones.
+
+Note that the sample test contains pre-created screenshots which might differ from yours because:
+• You have a different environment (different version of the operating system, other screen resolution and so on).
+• Your screenshots have the shadow around windows.
+
+So, you may need to update screenshots on your own computer to wave the sample working.
+
+## Screenshots with no Shadow
+It is recommended that screenshots you work with have no shadow. To turn off the shadow, run these two shell commands:
+defaults write com.apple.screencapture disable-shadow -bool false
+killall SystemUIServer

@@ -1,0 +1,32 @@
+# Comments start with # symbol in the beginning of the line.
+# No space or tab symbol(s) is allowed before or after '='.
+# No space or tab symbol(s) is allowed in the parameter name.
+# No comments are allowed in the same line with data.
+# More than one '=' per line isn't allowed.
+#
+# Samples:
+#		path=/Applications/program.app
+#		delay=0.3
+#		# below is a list with two parameters:
+#		docs=
+#		document1.txt
+#		document2.txt
+# The end of a list is a new line with a comment, end of file, another parameter or empty line.
+# For flags, use "yes" or "no".
+
+
+# program under test
+app_path_to_test=/Applications/Preview.app
+
+# program to create standard screenshots
+app_path_standard=/Applications/Preview.app
+
+# document file extension
+doc_ext=.tiff
+
+# screenshot file extension
+screenshot_ext=.png
+
+# delay in ms, usually about 0.2-0.8 ms
+delay=0.6
+
